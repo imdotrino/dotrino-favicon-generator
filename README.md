@@ -1,5 +1,7 @@
 # Favicon Generator
 
+> **Parte del ecosistema [Dotrino](https://dotrino.com).** Misión: aplicaciones que resuelven problemas comunes, respetando tu privacidad — sin anuncios, sin cookies, sin rastreo de datos, sin vender tu identidad a nadie.
+
 [![Live App](https://img.shields.io/badge/Live-App-brightgreen)](https://dotrino.github.io/favicon-generator)
 
 A Progressive Web App (PWA) built with Vite, TypeScript, and Vue that allows you to convert PNG/JPG images to Windows-compatible .ico files and favicon.ico files.
