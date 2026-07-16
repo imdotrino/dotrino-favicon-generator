@@ -15,9 +15,47 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Contenido de la app: mantiene la tarjeta centrada como antes; el topbar ocupa
+   su propia fila arriba (a ancho completo). */
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 20px;
+}
+
+/* Tema del topbar compartido (@dotrino/topbar, §5): el paquete lee estas vars y
+   por defecto es oscuro/morado; aquí lo alineamos con la paleta clara de la app.
+   Sticky en el host (el .bar del componente no lo es): así el support y el
+   "volver" siguen siempre a la vista, como cuando flotaban. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  --dotrino-topbar-bg: rgba(255, 255, 255, 0.92);
+  --dotrino-topbar-border: rgba(44, 62, 80, 0.14);
+  --dotrino-topbar-text: #2c3e50;
+  --dotrino-topbar-muted: #7f8c8d;
+  --dotrino-topbar-accent: #3498db;
+  --dotrino-topbar-accent-text: #ffffff;
+  --dotrino-topbar-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* La moneda de support vive en el shadow del topbar: las --ds-* heredan hacia
+     adentro y la tematizan clara. */
+  --ds-accent: #3498db;
+  --ds-accent-press: #2980b9;
+  --ds-modal-bg: #ffffff;
+  --ds-modal-text: #2c3e50;
+  --ds-modal-muted: #7f8c8d;
+  --ds-modal-border: #e4e9ec;
+  --ds-modal-hover: rgba(0, 0, 0, 0.06);
+}
+
+.topbar::part(brand-name) {
+  font-size: 1.05rem;
 }
 
 .container {

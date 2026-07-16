@@ -10,8 +10,9 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@dotrino/nav": "0.2.1",
-    "@dotrino/support": "0.4.1",
+    "@dotrino/identity": "0.21.0",
+    "@dotrino/reputation": "0.8.0",
+    "@dotrino/topbar": "0.3.0",
     "jszip": "^3.10.1",
     "to-ico": "^1.1.5",
     "vue": "^3.3.0",

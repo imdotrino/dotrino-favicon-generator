@@ -1,4 +1,22 @@
 <template>
+  <!-- Barra superior estándar del ecosistema (§5): marca + volver + perfil (§6.1)
+       + moneda de support, todo en el componente compartido. La app no re-arma
+       el header a mano. `no-lang`: esta app es de un solo idioma (inglés). -->
+  <dotrino-topbar
+    ref="topbarRef"
+    class="topbar"
+    brand="Favicon Generator"
+    icon="/icon.svg"
+    brand-href="./"
+    lang="en"
+    no-lang
+    profile
+    support-href="https://ko-fi.com/dotrino"
+    support-repo="imdotrino/dotrino-favicon-generator"
+    support-discord="https://discord.gg/D648uq7cth"
+  ></dotrino-topbar>
+
+  <main class="page">
   <div class="container">
     <h1>Favicon Generator</h1>
     <p class="subtitle">Convert PNG/JPG images to Windows-compatible .ico files</p>
@@ -50,16 +68,52 @@
       {{ statusMessage }}
     </div>
   </div>
+  </main>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watchEffect, onMounted } from 'vue'
 import JSZip from 'jszip'
+import '@dotrino/topbar'
+import { getIdentity } from './services/identity'
+import { getReputation } from './services/reputation'
 
 interface IcoFile {
   data: ArrayBuffer
   name: string
 }
+
+/* ---- Identidad + perfil (§6.1): el topbar es dueño del modal "Mi perfil";
+   la app solo le pasa los pilares (identity/reputation) y el tema. ---- */
+const topbarRef = ref<any>(null)
+const identityInst = ref<any>(null)
+const reputationInst = ref<any>(null)
+
+// Tema del modal de perfil, acorde a la paleta clara de la app (tarjeta blanca,
+// texto #2c3e50, acento #3498db) para que no desentone con el resto.
+const profileTheme = {
+  '--ccp-bg': '#ffffff', '--ccp-bg-2': '#f8f9fa', '--ccp-bg-3': '#ecf0f1', '--ccp-bg-4': '#e4e9ec',
+  '--ccp-border': '#bdc3c7', '--ccp-text': '#2c3e50', '--ccp-muted': '#7f8c8d',
+  '--ccp-accent': '#3498db', '--ccp-accent-2': '#2980b9', '--ccp-accent-text': '#ffffff',
+  '--ccp-gold': '#c98a00', '--ccp-derived': '#b07f00',
+  '--ccp-online': '#2ecc71', '--ccp-affinity': '#3498db',
+  '--ccp-input-bg': '#f8f9fa', '--ccp-radius': '12px',
+  '--ccp-font': "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  '--ccp-font-headline': "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+}
+
+watchEffect(() => {
+  const tb = topbarRef.value
+  if (!tb) return
+  tb.identity = identityInst.value ?? null
+  tb.reputation = reputationInst.value ?? null
+  tb.profileTheme = profileTheme
+})
+
+onMounted(async () => {
+  identityInst.value = await getIdentity()
+  if (identityInst.value) reputationInst.value = await getReputation()
+})
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)

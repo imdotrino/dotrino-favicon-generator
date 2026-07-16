@@ -4,7 +4,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   plugins: [
-    vue(),
+    // Los tags `dotrino-*` son Web Components del ecosistema, no componentes Vue:
+    // sin esto Vue avisa "Failed to resolve component" y no los monta.
+    vue({ template: { compilerOptions: { isCustomElement: (tag) => tag.startsWith('dotrino-') } } }),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
