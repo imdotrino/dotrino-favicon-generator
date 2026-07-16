@@ -1,15 +1,16 @@
 <template>
-  <!-- Barra superior estándar del ecosistema (§5): marca + volver + perfil (§6.1)
-       + moneda de support, todo en el componente compartido. La app no re-arma
-       el header a mano. `no-lang`: esta app es de un solo idioma (inglés). -->
+  <!-- Barra superior estándar del ecosistema (§5): marca + volver + idioma +
+       perfil (§6.1) + moneda de support, todo en el componente compartido. La app
+       no re-arma el header a mano ni tiene toggle propio: el idioma lo manda el
+       topbar (persiste 'dotrino.lang' y avisa con 'dotrino-lang'). -->
   <dotrino-topbar
     ref="topbarRef"
     class="topbar"
     brand="Favicon Generator"
     icon="/icon.svg"
     brand-href="./"
-    lang="en"
-    no-lang
+    :lang.attr="lang"
+    @dotrino-lang="onLang"
     profile
     support-href="https://ko-fi.com/dotrino"
     support-repo="imdotrino/dotrino-favicon-generator"
@@ -19,25 +20,25 @@
   <main class="page">
   <div class="container">
     <h1>Favicon Generator</h1>
-    <p class="subtitle">Convert PNG/JPG images to Windows-compatible .ico files</p>
-    
+    <p class="subtitle">{{ t.subtitle }}</p>
+
     <div class="file-input-container">
       <label class="file-input">
-        <input 
-          type="file" 
-          accept=".png,.jpg,.jpeg" 
+        <input
+          type="file"
+          accept=".png,.jpg,.jpeg"
           @change="handleFileSelect"
           ref="fileInput"
         />
         <span class="file-input-label">
-          {{ selectedFile ? selectedFile.name : 'Select PNG or JPG image' }}
+          {{ selectedFile ? selectedFile.name : t.pick }}
         </span>
       </label>
     </div>
 
     <div v-if="imagePreview" class="preview-container">
-      <h3 class="preview-title">Image Preview</h3>
-      <img :src="imagePreview" alt="Selected image" class="image-preview" />
+      <h3 class="preview-title">{{ t.previewTitle }}</h3>
+      <img :src="imagePreview" :alt="t.previewAlt" class="image-preview" />
     </div>
 
     <div class="button-group">
@@ -46,21 +47,21 @@
         @click="generateIco"
         :disabled="!selectedFile"
       >
-        Generate .ico File
+        {{ t.btnIco }}
       </button>
       <button
         class="btn btn-secondary"
         @click="generateFavicon"
         :disabled="!selectedFile"
       >
-        Generate favicon.ico
+        {{ t.btnFavicon }}
       </button>
       <button
         class="btn btn-tertiary"
         @click="generateAllPwaIcons"
         :disabled="!selectedFile"
       >
-        Generate All PWA Icons
+        {{ t.btnPwa }}
       </button>
     </div>
 
@@ -72,15 +73,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect, onMounted } from 'vue'
+import { ref, computed, watchEffect, onMounted } from 'vue'
 import JSZip from 'jszip'
 import '@dotrino/topbar'
 import { getIdentity } from './services/identity'
 import { getReputation } from './services/reputation'
+import { detectLang, messages, type Lang, type Messages } from './i18n'
 
 interface IcoFile {
   data: ArrayBuffer
   name: string
+}
+
+/* ---- Idioma (§9): lo manda <dotrino-topbar>. Arrancamos con su mismo criterio
+   ('dotrino.lang' → idioma del navegador) y luego seguimos sus avisos. ---- */
+const lang = ref<Lang>(detectLang())
+const t = computed(() => messages[lang.value])
+
+const onLang = (e: Event) => {
+  const l = (e as CustomEvent<{ lang: Lang }>).detail?.lang
+  if (l === 'es' || l === 'en') lang.value = l
 }
 
 /* ---- Identidad + perfil (§6.1): el topbar es dueño del modal "Mi perfil";
@@ -118,7 +130,10 @@ onMounted(async () => {
 const fileInput = ref<HTMLInputElement | null>(null)
 const selectedFile = ref<File | null>(null)
 const imagePreview = ref<string>('')
-const statusMessage = ref<string>('')
+// Guardamos la CLAVE del mensaje, no el texto ya resuelto: así un aviso en
+// pantalla también cambia de idioma si el usuario toca el toggle del topbar.
+const statusKey = ref<keyof Messages | ''>('')
+const statusMessage = computed(() => (statusKey.value ? t.value[statusKey.value] : ''))
 const statusType = ref<'status-success' | 'status-error'>('status-success')
 
 const handleFileSelect = (event: Event) => {
@@ -130,12 +145,12 @@ const handleFileSelect = (event: Event) => {
   // Validate file type
   const validTypes = ['image/png', 'image/jpeg', 'image/jpg']
   if (!validTypes.includes(file.type)) {
-    showStatus('Please select a PNG or JPG image file', 'status-error')
+    showStatus('errType', 'status-error')
     return
   }
 
   selectedFile.value = file
-  statusMessage.value = ''
+  statusKey.value = ''
 
   // Create preview
   const reader = new FileReader()
@@ -145,11 +160,11 @@ const handleFileSelect = (event: Event) => {
   reader.readAsDataURL(file)
 }
 
-const showStatus = (message: string, type: 'status-success' | 'status-error' = 'status-success') => {
-  statusMessage.value = message
+const showStatus = (key: keyof Messages, type: 'status-success' | 'status-error' = 'status-success') => {
+  statusKey.value = key
   statusType.value = type
   setTimeout(() => {
-    statusMessage.value = ''
+    statusKey.value = ''
   }, 5000)
 }
 
@@ -165,10 +180,10 @@ const generateIco = async () => {
     
     // Download the ICO file
     downloadFile(icoData.data, icoData.name)
-    showStatus('ICO file generated successfully!')
+    showStatus('okIco')
   } catch (error) {
     console.error('Error generating ICO:', error)
-    showStatus('Error generating ICO file. Please try again.', 'status-error')
+    showStatus('errIco', 'status-error')
   }
 }
 
@@ -184,10 +199,10 @@ const generateFavicon = async () => {
     
     // Download the favicon.ico file
     downloadFile(icoData.data, icoData.name)
-    showStatus('favicon.ico file generated successfully!')
+    showStatus('okFavicon')
   } catch (error) {
     console.error('Error generating favicon:', error)
-    showStatus('Error generating favicon.ico file. Please try again.', 'status-error')
+    showStatus('errFavicon', 'status-error')
   }
 }
 
@@ -195,7 +210,7 @@ const generateAllPwaIcons = async () => {
   if (!selectedFile.value) return
 
   try {
-    showStatus('Generating PWA icons...')
+    showStatus('pwaWorking')
     
     // Create canvas from file
     const canvas = await createCanvasFromFile(selectedFile.value)
@@ -277,10 +292,10 @@ const generateAllPwaIcons = async () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
     
-    showStatus('All PWA icons generated and downloaded as ZIP!')
+    showStatus('okPwa')
   } catch (error) {
     console.error('Error generating PWA icons:', error)
-    showStatus('Error generating PWA icons. Please try again.', 'status-error')
+    showStatus('errPwa', 'status-error')
   }
 }
 
