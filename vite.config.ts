@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { execSync } from 'node:child_process'
+import prerender from '@dotrino/prerender/vite'
 
 // <meta name="commit"> con el hash del commit del build (CONVENCIONES-APPS §3).
 function commitMeta () {
@@ -17,6 +18,8 @@ function commitMeta () {
 
 export default defineConfig({
   plugins: [
+    // El HTML llega con contenido para quien lo lee sin ejecutar JavaScript.
+    prerender(),
     commitMeta(),
     // Los tags `dotrino-*` son Web Components del ecosistema, no componentes Vue:
     // sin esto Vue avisa "Failed to resolve component" y no los monta.
