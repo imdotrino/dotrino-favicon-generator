@@ -33,7 +33,7 @@ export default defineConfig({
         name: 'Favicon Generator',
         short_name: 'FaviconGen',
         description: 'Generate Windows-compatible .ico files and favicons from PNG/JPG images',
-        theme_color: '#ffffff',
+        theme_color: '#00658c',
         icons: [
           {
             src: 'pwa-192x192.png',
