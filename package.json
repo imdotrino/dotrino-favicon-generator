@@ -10,7 +10,7 @@
     "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@dotrino/identity": "0.114.1",
+    "@dotrino/identity": "0.116.0",
     "@dotrino/reputation": "0.12.0",
     "@dotrino/store": "0.12.3",
     "@dotrino/theme": "0.1.0",
