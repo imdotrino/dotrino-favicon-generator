@@ -9,7 +9,7 @@ export async function getIdentity (): Promise<Identity | null> {
   try {
     identity = await Identity.connect()
   } catch (e) {
-    console.warn('[identity] vault inalcanzable:', (e as Error)?.message)
+    console.warn('[identity] vault unreachable:', (e as Error)?.message)
     identity = null
   }
   return identity
