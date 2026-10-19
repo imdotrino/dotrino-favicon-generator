@@ -268,15 +268,7 @@ const generateAllPwaIcons = async () => {
     // Generate ZIP file
     const zipBlob = await zip.generateAsync({ type: 'blob' })
     
-    // Download ZIP
-    const url = URL.createObjectURL(zipBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'pwa-icons.zip'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    downloadFile(zipBlob, 'pwa-icons.zip')
     
     showStatus('okPwa')
   } catch (error) {
@@ -409,8 +401,9 @@ const createIcoFile = (images: ArrayBuffer[], sizes: number[]): ArrayBuffer => {
   return buffer
 }
 
-const downloadFile = (data: ArrayBuffer, filename: string) => {
-  const blob = new Blob([data], { type: 'image/x-icon' })
+// Un ArrayBuffer es un .ico recién generado; un Blob ya trae su tipo (el ZIP).
+const downloadFile = (data: ArrayBuffer | Blob, filename: string) => {
+  const blob = data instanceof Blob ? data : new Blob([data], { type: 'image/x-icon' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
